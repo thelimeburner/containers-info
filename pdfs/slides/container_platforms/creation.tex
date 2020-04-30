@@ -1,0 +1,40 @@
+\begin{frame}[fragile]{Creating an Image}
+
+\begin{block}{Docker}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ vim Dockerfile
+{EDIT DOCKERFILE}
+$ Docker build .
+\end{lstlisting}
+\end{block}
+
+\begin{block}{runc}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ mkdir /c1 && cd /c1
+$ mkdir rootfs
+$ docker export $(docker create busybox) | tar -C rootfs -xvf -
+$ runc spec
+$ runc create c1
+\end{lstlisting}
+\end{block}
+
+
+
+\begin{block}{rkt}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ acbuild begin
+$ acbuild set-name example.com/hello
+$ acbuild copy hello /bin/hellp
+$ acbuild set-exec /bin/hello
+$ acbuild write hello-latest-linux-amd64.aci
+$ acbuild end
+\end{lstlisting}
+\end{block}
+
+\begin{block}{LXC}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ lxc-create -t download -n c1
+\end{lstlisting}
+\end{block}
+
+\end{frame}

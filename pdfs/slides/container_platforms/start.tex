@@ -1,0 +1,34 @@
+\begin{frame}[fragile]{Starting an Image}
+
+\begin{block}{Docker}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ docker run -it ubuntu /bin/bash
+$ docker run -d httpd
+\end{lstlisting}
+\end{block}
+
+\begin{block}{runc}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# cd /c1 && runc run c1
+# runc start c1
+\end{lstlisting}
+\end{block}
+
+
+
+\begin{block}{rkt}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# rkt run --interactive quay.io/coreos/apline-sh
+# rkt run --interactive docker://ubuntu --insecure-options=image
+# systemd-run --slice=machine rkt run quay.io/coreos/alpine-sh
+# rkt run example.com/app1 example.com/app2 ##Pod
+\end{lstlisting}
+\end{block}
+
+\begin{block}{LXC}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ lxc start c1 && lxc exec c1 -- /bin/bash
+\end{lstlisting}
+\end{block}
+
+\end{frame}

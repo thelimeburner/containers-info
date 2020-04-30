@@ -1,0 +1,45 @@
+\subsection{Available Platforms}
+\begin{frame}[fragile]{Available Platforms}
+
+\begin{columns}
+
+
+\column{0.5\textwidth}
+\begin{itemize}
+\item\color{cobalt} Docker
+\item\color{cobalt} runc
+\item\color{cobalt} rkt
+\item\color{cobalt} LXC/LXD
+\item\color{gray} Openvz
+\end{itemize}
+\column{0.5\textwidth} 
+\begin{center}
+ \includegraphics[height=2in]{images/platforms.PNG}
+\end{center}
+\end{columns}
+
+
+%cgroups are typically mounted at the following location:
+%\begin{block}{}
+%\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it]
+%/sys/fs/cgroup
+%\end{lstlisting}
+%\end{block}
+%This directory contains the various resource types that we can control.  These include: 
+%\begin{itemize}
+%	\begin{multicols}{2}
+%	\item blkio
+%	\item cpu
+%	\item cpuacct
+%	\item cpuset
+%	\item devices
+%	\item freezer
+%	\item hugetlb
+%	\item memory
+%	\item net\_cls
+%	\item net\_prio
+%         \end{multicols}
+%\end{itemize}
+%
+%\color{cobalt}We'll go into a little more detail on these later.
+\end{frame}

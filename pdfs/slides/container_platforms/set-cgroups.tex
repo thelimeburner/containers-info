@@ -1,0 +1,71 @@
+\begin{frame}[fragile]{Setting cgroup Limits}
+
+We are going to set the maximum memory limits to 8gb. \textbf{Note:} You can always use manually cgroups interface for setting limits.
+
+\begin{block}{Docker}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ docker run -it   --memory=8g ubuntu /bin/bash
+\end{lstlisting}
+\end{block}
+
+\begin{block}{runc}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ runc update --memory 8000000000 c1
+\end{lstlisting}
+\end{block}
+
+
+
+\begin{block}{rkt}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+
+Use systemd config:
+[Service]
+Slice=machine.slice
+MemoryLimit=8G
+ExecStart=/usr/bin/rkt run --interactive docker://ubuntu --insecure-options=image --volume data,kind=host,source=/data --mount volume=data,target=/data2
+ExecStopPost=/usr/bin/rkt gc --mark-only
+KillMode=mixed
+Restart=always
+\end{lstlisting}
+\end{block}
+
+\begin{block}{LXC}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ lxc config set c1 limits.memory 8g
+\end{lstlisting}
+\end{block}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Notes on cgroup interaction}
+So how does each interface with cgroups?
+\begin{block}{Docker and runc}
+\begin{itemize}
+\tiny
+\item Docker runs atop runc.
+\item Relies on libcontainer from Docker.
+\item libcontainer provides all functionality for creating containers.
+\item libcontainer allows interfacing with cgroups using the native interface or systemd.
+\end{itemize}
+\end{block}
+
+\begin{block}{rkt}
+\tiny
+\begin{itemize}
+\item Takes advantage of the systemd interface for cgroups. 
+\item Relies on setting resource limits in a systemd service definition rather than implementing their own system. 
+\item Only supports: cpu, cpuset and memory. 
+\end{itemize}
+\end{block}
+
+\begin{block}{LXC}
+\begin{itemize}
+\tiny
+\item Uses liblxc for interacting with cgroups.
+\item Filesystem limits can only be set when using zfs or btrfs. 
+\end{itemize}
+\end{block}
+
+\end{frame}

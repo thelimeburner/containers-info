@@ -1,0 +1,377 @@
+\documentclass[pdf]{beamer}
+\usepackage{listings}
+\usepackage{multicol}
+%\usetheme{Warsaw}
+\mode<presentation>{}
+
+\title{cgroups}
+
+\subtitle{What are they and how do I use them??}
+
+\author{Lucas Chaufournier}
+
+\begin{document}
+%\setbeamertemplate{itemize/enumerate body begin}{\tiny}
+
+\definecolor{candypink}{rgb}{0.89, 0.44, 0.48}
+\definecolor{cobalt}{rgb}{0.0, 0.28, 0.67}
+
+%%title frame
+\begin{frame}
+\titlepage
+\end{frame}
+
+
+\begin{frame}{Table of Contents}
+	\tableofcontents
+\end{frame}
+
+
+%%normal frame
+\section{General Overview}
+\subsection{Definition}
+\begin{frame}{Definition}
+
+\begin{block}{From the Linux Kernel Documentation}
+"Control Groups provide a mechanism for aggregating/partitioning sets of tasks and all their future children, into hierarchical groups with specialized behaviors."
+\end{block}
+\pause
+\begin{block}{Layman's Terms}
+cgroups are a generic mechanism to group tasks together and apply difference resource controllers to them.
+\end{block}
+
+\end{frame}
+
+\subsection{General Interface}
+\begin{frame}{General Interface}
+There are multiple ways to interact with the cgroup system.
+\begin{enumerate}
+\item \color<2>{cobalt}Manually Interact with the filesystem
+\item \color<2>{gray}Use of the api.
+\item \color<2>{cobalt}Use of cgexec and cgcreate interface
+\item \color<2>{candypink}Container Management Platforms such as Docker.
+\end{enumerate}
+
+\end{frame}
+
+\subsection{Manual Cgroup Interaction}
+\begin{frame}[fragile]{Manual Cgroup Interaction}
+cgroups are typically mounted at the following location:
+\begin{block}{}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it]
+/sys/fs/cgroup
+\end{lstlisting}
+\end{block}
+This directory contains the various resource types that we can control.  These include: 
+\begin{itemize}
+	\begin{multicols}{2}
+	\item blkio
+	\item cpu
+	\item cpuacct
+	\item cpuset
+	\item devices
+	\item freezer
+	\item hugetlb
+	\item memory
+	\item net\_cls
+	\item net\_prio
+         \end{multicols}
+\end{itemize}
+
+\color{cobalt}We'll go into a little more detail on these later.
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Manual cgroup Interaction: Creating a cgroup}
+To create a new cgroup, simply create a new directory in the resource that you want to limit. We will use memory as an example.
+
+%\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it]
+%mkdir /sys/fs/cgroup/memory/mycgroup1
+%\end{lstlisting}
+
+\begin{block}{}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it]
+# mkdir /sys/fs/cgroup/memory/mycgroup1
+\end{lstlisting}
+\end{block}
+
+If you run \textit{\texttt{ls}} on that directory you will see that many new files have been added. Interacting with these files, allows one to set various limits on the resource. 
+
+
+\end{frame}
+
+\begin{frame}[fragile]{Manual cgroup Interaction: Adding a process to the cgroup.}
+To add a process to this cgroup we need to find the PID of the process. Once we have the PID, we can echo it to the cgroup.procs file in our cgroup directory.
+
+\begin{block}{Add a process with PID 4950 to cgroup.}
+
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# echo 4950 > /sys/fs/cgroup/memory/mycgroup1/cgroup.procs
+\end{lstlisting}
+\end{block}
+
+Our process is now in our cgroup and we can now begin to set limits.
+\end{frame}
+
+\begin{frame}[fragile]{Manual cgroup Interaction: Setting Limits.}
+We can set the maximum amount of memory a process can use by writing the max number of bytes to the \textbf{memory.limit\_in\_bytes} file. 
+
+\begin{block}{Limit process to 1GB.}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# echo 1000000000 > /sys/fs/cgroup/memory/mycgroup1/memory.limit_in_bytes
+\end{lstlisting}
+\end{block}
+
+Our process now has only 1GB of memory available to it.
+
+\end{frame}
+
+\begin{frame}[fragile]{Manual cgroup Interaction: Misc }
+\begin{itemize}
+\item To remove a cgroup, you must first remove all processes from the cgroup.procs and tasks files.
+\item Processes can only belong to one cgroup at a time for a resource. Adding to a new cgroup removes membership of the other.
+\item You can view the cgroups a process is a member of by reading the \textbf{/proc/[pid]/cgroup} file.
+\end{itemize}
+
+\end{frame}
+
+\subsection{cgroup Tools}
+\begin{frame}[fragile]{cgroup Tools}
+It turns out there is an even easier method for controlling cgroups in the form of \textit{cgexec}, \textit{cgset}, \textit{cgdelete} and \textit{cgcreate}.\\ 
+
+
+These tools provide an easy to use interface for creating, managing, and removing cgroups.
+
+
+\begin{block}{To create a cgroup simply run the cgcreate command like so:}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# cgcreate -g cpu,cpuacct,...:/mycgroup1
+\end{lstlisting}
+\end{block}
+
+Replace \textit{cpu,cpuacct,...} with your desired cgroup controllers. 
+\end{frame}
+
+\begin{frame}[fragile]{cgroup Tools}
+With \textit{cgexec} you can start processes in a cgroup.
+
+
+\begin{block}{Run bash in a memory cgroup.}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# cgexec -g cpu,memory:mycgroup1 bash
+\end{lstlisting}
+\end{block}
+ 
+With \textit{cgclassify} you can add existing processes to a cgroup.
+
+\begin{block}{Add process 4985 to mycgroup1 }
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# cgclassify -g cpu,memory:mycgroup1 4985
+\end{lstlisting}
+\end{block}
+
+
+
+With \textit{cgset} you can set the limits on a cgroup.
+
+\begin{block}{Limit memory of cgroup to 5gb. }
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# cgset -r memory.limit_in_bytes=5000000000 mycgroup1
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{cgroup Tools: Delete cgroups }
+With \textit{cgdelete} you can delete a cgroup.
+
+
+\begin{block}{Delete a cgroup.}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# cgdelete cpu,memory:/mycgroup1
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\subsection{Other Frameworks}
+\begin{frame}[fragile]{Other Frameworks }
+Other frameworks create cgroups automatically when you start containers. 
+
+\begin{block}{Docker container with 8gb ram and cpus 1,2,3}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# docker run -it -m=8g --cpuset-cpus="1-3" ubuntu /bin/bash
+\end{lstlisting}
+\end{block}
+ 
+\begin{block}{LXD/LXC container with 8gb ram and cpus 1,2,3}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# lxc launch ubuntu-daily:16.04 container1
+# lxc config set container1 limits.memory 8GB
+# lxc config set container1 limits.cpu  1,4
+\end{lstlisting}
+\end{block}
+
+\begin{block}{rkt container with 8gb ram and cpus 1,2,3}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# rkt run --interactive docker://ubuntu --insecure-options=image
+# Manually Manage
+\end{lstlisting}
+\end{block}
+
+
+
+\end{frame}
+
+\section{Available cgroups}
+
+\begin{frame}{blkio}
+\begin{itemize}
+\small
+\item Controls and monitors access to I/O on block devices by all tasks in a cgroup.
+\item Proportional Weight: Uses CFQ scheduling to make sure each cgroup has a set percentage of all I/O operations
+\item I/O Throttling: Used to set an upper limit for the number of I/O operations performed by specific device. 
+\item blkio provides many fine tuning knobs as well as methods for reading I/O stats.
+\item  \color{candypink}blkio does not work for buffered write operations but \color{cobalt}does work for direct access and buffered read.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{blkio Tunables}
+blkio tunables and statistics:
+\begin{itemize}
+	\tiny
+	\begin{multicols}{3}
+	\item blkio.io\_merged                   
+	\item blkio.throttle.read\_bps\_device
+        \item blkio.io\_merged\_recursive         
+        \item blkio.throttle.read\_iops\_device
+        \item blkio.io\_queued                   
+        \item blkio.throttle.write\_bps\_device
+        \item blkio.io\_queued\_recursive         
+        \item blkio.throttle.write\_iops\_device
+        \item blkio.io\_service\_bytes            
+        \item blkio.time
+        \item blkio.io\_service\_bytes\_recursive  
+        \item blkio.time\_recursive
+        \item blkio.io\_serviced                 
+        \item blkio.weight
+        \item blkio.io\_serviced\_recursive       
+        \item blkio.weight\_device
+        \item blkio.io\_service\_time             
+        \item blkio.io\_service\_time\_recursive   
+        \item blkio.io\_wait\_time                
+        \item blkio.io\_wait\_time\_recursive      
+        \item blkio.leaf\_weight            
+        \item blkio.leaf\_weight\_device 
+        \item blkio.reset\_stats                 
+        \item blkio.sectors                     
+        \item blkio.sectors\_recursive           
+        \item blkio.throttle.io\_service\_bytes   
+        \item blkio.throttle.io\_serviced
+         \end{multicols}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{cpuacct}
+\begin{itemize}
+\item Generates automatic reports for cpu usage of a cgroup.
+\item \textbf{\texttt{cpuacct.usage}} reports the total cpu time used. 
+\item \textbf{\texttt{cpuacct.stat}} reports the user and system time spent on cpu for all tasks in a cgroup.
+\item \textbf{\texttt{cpuacct.usage\_percpu}} reports the time consumed on each cpu for all tasks.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{cpusets}
+\begin{itemize}
+\item Specifies the cpus and memory nodes to be assigned to a cgroup.
+\item Allows you to specify a subset of cpus for tasks in the cgroup to run on.
+\item \textbf{\texttt{cpuset.cpu\_exclusive}} allows you to prevent other cgroups from using the specified cpus. Effectively pins exclusively to the core.
+\item Available options
+\begin{multicols}{3}
+\tiny
+\item cpuset.cpus 
+\item cpuset.mems
+\item cpuset.memory\_migrate
+\item cpuset.cpu\_exclusive
+\item cpuset.mem\_exclusive
+\item cpuset.mem\_hardwall
+\item cpuset.memory\_pressure
+\item cpuset.memory\_pressure\_enabled
+\item cpuset.memory\_spread\_page
+\item cpuset.memory\_spread\_slab
+\item cpuset.sched\_load\_balance
+\item cpuset.sched\_relax\_domain\_level
+\end{multicols}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Devices}
+\begin{itemize}
+\item Allows and disallows access to devices for a cgroup.
+\item Specify devices in a 4-tuple that represents type (block vs character), device type (i.e. SCSI), \\ device node (i.e. partition1), access (r,rw,m).
+\item \texttt{b 8:1 rw} $\rightarrow$  a block device type SCSI with partition 1 and read/write access.
+\item \texttt{devices.list} can be used to list all devices a cgroup has access to.
+\item By default cgroups have access to all devices.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{freezer}
+\begin{itemize}
+\item The freezer subsystem allows one to suspend and resume tasks.
+\item \texttt{freezer.state} only available to non-root cgroups.
+\item There are only three states:
+\begin{multicols}{3}
+\item Frozen
+\item Freezing
+\item Thawed
+\end{multicols}
+\item Simply move a process into a cgroup with freezer and then write Frozen to the cgroup. 
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{memory}
+\begin{itemize}
+\item The memory subsystem allows the control of memory resources for the cgroup.
+\item Allows you to set hard and soft limits on the amount of memory for the cgroup as well as the swappiness.
+\item  To limit the overall memory for a cgroup write to \texttt{memory.limit\_in\_bytes}. See example in earlier slides.
+\item Available options:
+\tiny
+\begin{multicols}{3}
+
+ \item memory.limit\_in\_bytes
+\item memory.numa\_stat
+\item memory.oom\_control
+\item memory.pressure\_level                  
+\item memory.soft\_limit\_in\_bytes
+\item memory.force\_empty                               
+\item memory.swappiness
+\item memory.kmem.limit\_in\_bytes          
+\item memory.use\_hierarchy
+\item memory.kmem.slabinfo                            
+\item memory.kmem.tcp.limit\_in\_bytes      
+\item memory.move\_charge\_at\_immigrate
+\end{multicols}
+\end{itemize}
+     
+\end{frame}
+
+
+\begin{frame}{net}
+\begin{itemize}
+\item This subsystem allows you to tag packets and set the priority of network traffic for cgroups.
+\item \texttt{net\_cls} tags network packets allowing \texttt{tc} to identify packets.
+\item \texttt{net\_cls.classid} is a single value written in hex of the form 0xAAAABBBB that is the tag for packets.
+\item \texttt{net\_prio.prioidx} is a read only file that contains the id for cgroup.
+\item \texttt{net\_prio.ifpriomap} is a mapping of interfaces to priorities for the cgroup.
+\end{itemize}
+\end{frame}
+
+
+
+
+\end{document}

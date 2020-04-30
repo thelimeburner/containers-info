@@ -1,0 +1,30 @@
+\begin{frame}[fragile]{Deleting a Container}
+
+\begin{block}{Docker}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ docker rm c4a5ec20a9ec 
+$ docker rmi httpd
+\end{lstlisting}
+\end{block}
+
+\begin{block}{runc}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ runc delete c1
+\end{lstlisting}
+\end{block}
+
+
+
+\begin{block}{rkt}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ rkt rm 203d0797
+\end{lstlisting}
+\end{block}
+
+\begin{block}{LXC}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ lxc delete c1
+\end{lstlisting}
+\end{block}
+
+\end{frame}

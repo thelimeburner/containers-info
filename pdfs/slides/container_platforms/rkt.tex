@@ -1,0 +1,19 @@
+\subsection{rkt}
+\begin{frame}[fragile]{rkt}
+
+%\begin{block}{}
+%\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it]
+%INSERT COMMAND HERE
+%\end{lstlisting}
+%\end{block}
+\begin{itemize}
+\item From CoreOS, designed to address some of the security concerns of docker.
+\item Use of prepackaged containers from \texttt{quay.io} or docker containers
+\item Works with kubernetes 
+\item \color{red}Uses Systemd for limited container resource management
+\item \color{cobalt}Pods act as a grouping of app images. Talk to each other over localhost. Similar setup to kubernetes pods.
+\item \color{cobalt}Pods mean that all apps in a pod are scheduled together on the same machine and configured with the same resources. 
+\end{itemize}
+
+
+\end{frame}

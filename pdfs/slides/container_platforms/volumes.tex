@@ -1,0 +1,32 @@
+\begin{frame}[fragile]{Mounting a volume}
+
+We are going to mount a host directory /data in the container as /data2.
+
+\begin{block}{Docker}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ docker run -it -v /data:/data2 ubuntu /bin/bash
+
+\end{lstlisting}
+\end{block}
+
+\begin{block}{runc}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ Does not exist 
+\end{lstlisting}
+\end{block}
+
+
+
+\begin{block}{rkt:}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+$ rkt run c1 --volume logs,kind=host,source=/data --mount volume=logs,target=/data2
+\end{lstlisting}
+\end{block}
+
+\begin{block}{LXC}
+\begin{lstlisting}[language=bash,keywordstyle=\bf,stringstyle=\it,basicstyle=\tiny]
+# lxc config device add c1 sdb disk source=/data path=data2
+\end{lstlisting}
+\end{block}
+
+\end{frame}

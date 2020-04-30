@@ -1,0 +1,68 @@
+\documentclass[pdf]{beamer}
+\usepackage{listings}
+\usepackage{multicol}
+%\usetheme{Warsaw}
+\mode<presentation>{}
+
+\title{Container Platforms}
+
+\subtitle{What is available and which should I use?}
+
+\author{Lucas Chaufournier}
+
+\begin{document}
+%\setbeamertemplate{itemize/enumerate body begin}{\tiny}
+
+\definecolor{candypink}{rgb}{0.89, 0.44, 0.48}
+\definecolor{cobalt}{rgb}{0.0, 0.28, 0.67}
+
+%%title frame
+\begin{frame}
+\titlepage
+\end{frame}
+
+
+\begin{frame}{Table of Contents}
+	\tableofcontents
+\end{frame}
+
+
+%%normal frame
+\section{General Overview}
+
+
+\input{platforms}
+
+\input{docker}
+
+\input{runc}
+
+\input{rkt}
+
+\input{lxc}
+
+\section{Using Containers}
+
+\input{creation}
+\input{start}
+\input{stop}
+\input{delete}
+\input{volumes}
+
+\section{cgroups and Containers}
+\input{set-cgroups}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
